@@ -23,7 +23,7 @@ function varargout = SpSpj(varargin)
 
 % Edit the above text to modify the response to help SpSpj
 
-% Last Modified by GUIDE v2.5 12-Oct-2015 02:41:24
+% Last Modified by GUIDE v2.5 13-Oct-2015 14:41:14
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -99,18 +99,18 @@ function pushbutton_start_imu_Callback(hObject, eventdata, handles)
 
 global GUI_COUNT_VALUE;
 global IS_IMU_Running;
-IS_IMU_Running=true;
-
 global IMU_SERIAL_PORT;
-global SampleRate;
+global IMU_SAMPLE_RATE;
 global IMU_OPEN_PORT;
+
+IS_IMU_Running=true;
 
 
 % Start recieving data if stopeed before (not paused)
-if GUI_COUNT_VALUE==0
-    SampleRate = 1;
-    [IMU_SERIAL_PORT, SampleRate, IMU_OPEN_PORT] =...
-        setup_IMU(SampleRate);
+if GUI_COUNT_VALUE == 0
+    IMU_SAMPLE_RATE = 50;
+    [IMU_SERIAL_PORT, IMU_SAMPLE_RATE, IMU_OPEN_PORT] =...
+        setup_IMU(IMU_SAMPLE_RATE);
 end
 
 if (IMU_OPEN_PORT)
@@ -123,7 +123,7 @@ while (IS_IMU_Running && IMU_OPEN_PORT)
     GUI_COUNT_VALUE = GUI_COUNT_VALUE+1;
     set(handles.text1,'String',num2str(GUI_COUNT_VALUE));
     pause(0.0001);
-    Read_Acceleration_And_Angular_Rate(IMU_SERIAL_PORT, SampleRate, IMU_OPEN_PORT);
+    Read_Acceleration_And_Angular_Rate(IMU_SERIAL_PORT, IMU_SAMPLE_RATE, IMU_OPEN_PORT);
 end
 
 % Close and delete the serial port, only if stopeed (not paused)
@@ -144,11 +144,12 @@ function pushbutton_start_gps_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 global IS_GPS_Running;
-IS_GPS_Running=1;
 global GUI_COUNT_VALUE;
 global GPS_SERIAL_PORT;
 global GPS_Error;
 global GPS_first_result;
+
+IS_GPS_Running=1;
 
 % Start setting up the data recieving, if stopeed before (not paused)
 if GUI_COUNT_VALUE==0
@@ -269,3 +270,34 @@ pause(1);
 
 % Hint: delete(hObject) closes the figure
 delete(hObject);
+
+
+
+function edit_imu_sample_rate_Callback(hObject, eventdata, handles)
+% hObject    handle to edit_imu_sample_rate (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+global IMU_SAMPLE_RATE;
+
+edit_txt_content = get(hObject,'String');
+if isstrprop(edit_txt_content,'digit')
+    IMU_SAMPLE_RATE = str2double(edit_txt_content);
+end
+% Hints: get(hObject,'String') returns contents of edit_imu_sample_rate as text
+%        str2double(get(hObject,'String')) returns contents of edit_imu_sample_rate as a double
+
+
+% --- Executes during object creation, after setting all properties.
+function edit_imu_sample_rate_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to edit_imu_sample_rate (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+% Hint: edit controls usually have a white background on Windows.
+%       See ISPC and COMPUTER.
+if ispc && isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColor'))
+    set(hObject,'BackgroundColor','white');
+end
+
+set(hObject,'String','50');
