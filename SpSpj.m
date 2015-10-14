@@ -57,6 +57,7 @@ function SpSpj_OpeningFcn(hObject, eventdata, handles, varargin)
 handles.output = hObject;
 global GUI_COUNT_VALUE;
 global KeepRunning;
+global IMU_SAMPLE_RATE;
 
 GUI_COUNT_VALUE=0;
 KeepRunning=1;
@@ -72,7 +73,8 @@ set(handles.pushbutton_stop_gps,'Enable','off');
 guidata(hObject, handles);
 
 % *** load all libraries
-load_folder_subfolder_libraries
+load_folder_subfolder_libraries;
+IMU_SAMPLE_RATE = 50;
 % UIWAIT makes SpSpj wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
@@ -108,7 +110,6 @@ IS_IMU_Running=true;
 
 % Start recieving data if stopeed before (not paused)
 if GUI_COUNT_VALUE == 0
-    IMU_SAMPLE_RATE = 50;
     [IMU_SERIAL_PORT, IMU_SAMPLE_RATE, IMU_OPEN_PORT] =...
         setup_IMU(IMU_SAMPLE_RATE);
 end
@@ -127,7 +128,7 @@ while (IS_IMU_Running && IMU_OPEN_PORT)
 end
 
 % Close and delete the serial port, only if stopeed (not paused)
-if GUI_COUNT_VALUE==0
+if (IMU_OPEN_PORT && GUI_COUNT_VALUE==0)
     fclose(IMU_SERIAL_PORT);                                  % Close the serial port
     delete(IMU_SERIAL_PORT);                                  % Delete the serial object
 end
@@ -162,7 +163,7 @@ if (GPS_Error ~= 0)
     set(handles.pushbutton_stop_gps,'Enable','on');
 end
 
-while (IS_GPS_Running)
+while (GPS_Error ~= 0 && IS_GPS_Running)
     % if this is the first result
     if (GUI_COUNT_VALUE == 0)
         [result_data_ENU, GPS_first_result, result_error] = GPS_new(GPS_SERIAL_PORT, true);
@@ -176,7 +177,7 @@ while (IS_GPS_Running)
 end
 
 % Close and delete the serial port, only if stopeed (not paused)
-if GUI_COUNT_VALUE==0
+if (GPS_Error ~= 0 && GUI_COUNT_VALUE == 0)
     fclose(GPS_SERIAL_PORT);                                  % Close the serial port
     delete(GPS_SERIAL_PORT);                                  % Delete the serial object
 end
@@ -282,7 +283,17 @@ global IMU_SAMPLE_RATE;
 
 edit_txt_content = get(hObject,'String');
 if isstrprop(edit_txt_content,'digit')
-    IMU_SAMPLE_RATE = str2double(edit_txt_content);
+    sample_rate = round(str2double(edit_txt_content));
+    if (sample_rate > 0 && sample_rate < 251)
+        IMU_SAMPLE_RATE = sample_rate;
+        set(hObject,'String',IMU_SAMPLE_RATE);
+    else
+        h = msgbox('The desired sampling rate should be between 1 and 250 Hz.');
+        set(hObject,'String','50');
+    end
+else
+    h = msgbox('The desired sampling rate should be a positive integer.');
+    set(hObject,'String','50');
 end
 % Hints: get(hObject,'String') returns contents of edit_imu_sample_rate as text
 %        str2double(get(hObject,'String')) returns contents of edit_imu_sample_rate as a double
