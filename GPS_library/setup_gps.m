@@ -5,6 +5,7 @@ PROMPT01 = 'Please enter COM port # (1 for COM1, etc.): ';
 TITLE01 = 'COM port';
 Error = 1;
 
+gps_serial_port = '';
 ComNum = char(inputdlg(PROMPT01, TITLE01, 1, {'2'}));
 
 if isstrprop(ComNum,'digit')

@@ -35,13 +35,13 @@ TITLE01 = 'COM port';
 
 % load_folder_subfolder_libraries();
 
-% delete(instrfind);
+delete(instrfind);
 % clearvars SerialLink
 
 % while is_running == true
 
 
-%     SampleRate = 1;
+initial_sample_rate = SampleRate;
 PortOpen = false;
 % warning off MATLAB:serial:fread:unsuccessfulRead
 SerialLink = '';
@@ -50,22 +50,26 @@ SerialLink = '';
 ComNum = char(inputdlg(PROMPT01, TITLE01, 1, {'3'}));
 if isstrprop(ComNum,'digit')
     ComNum = str2double(ComNum);
-    [SerialLink,Error] = i3dmgx3_OpenPort(ComNum);
+    % if a port is open from previous runs, delete the port
+    if ~isempty(instrfind('Port',strcat('COM', ComNum)))
+        delete(instrfind);
+    end
+    [SerialLink, Error] = i3dmgx3_OpenPort(ComNum);
     if Error == 0
-        Error = setCommTimeouts(SerialLink,1/SampleRate+.1);
+        Error = setCommTimeouts(SerialLink, 1/SampleRate+.1);
         if Error == 0
             %Determine mode status and get data rate
-            [Packet,Error] = i3dmgx3_SetReadMode(SerialLink,0);
-            if Error == 0;
-                Mode = Packet(2);
-                if Mode == 1 || Mode || 3
-                    [SampleRate,Error] = i3dmgx3_ReadDataRate(SerialLink);
-                else
-                    [SampleRate,Error] = i3dmgx3_ReadDataRateCM(SerialLink,SampleRate);
-                end
-                if Error == 0
-                    PortOpen = true;
-                end
+            [Packet, Error] = i3dmgx3_SetReadMode(SerialLink,0);
+            if Error == 0
+%                 Mode = Packet(2);
+%                 if Mode == 1 || Mode || 3
+                [SampleRate,Error] = i3dmgx3_ReadDataRate(SerialLink);
+%                 else
+%                     [SampleRate,Error] = i3dmgx3_ReadDataRateCM(SerialLink,SampleRate);
+%                 end
+%                 if Error == 0
+                PortOpen = true;
+                i3dmgx3_WriteDataRate(SerialLink, initial_sample_rate);
             end
         end
     else
