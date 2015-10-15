@@ -19,7 +19,7 @@ if isempty(strmatch('$GPGLL',data))
     data = fscanf(gps_serial_port);
     % TODO: add a timer for timeout?
     fprintf(data);                            % Read Data back from PIC
-    [result_data, result_error] = nmealineread(data)
+    [result_data, result_error] = nmealineread(data);
     if (result_error ~= -1)
         if (is_first)
             result_data_ENU = convert2enu(result_data, result_data)

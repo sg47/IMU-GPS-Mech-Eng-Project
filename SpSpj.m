@@ -55,12 +55,16 @@ function SpSpj_OpeningFcn(hObject, eventdata, handles, varargin)
 
 % Choose default command line output for SpSpj
 handles.output = hObject;
-global GUI_COUNT_VALUE;
-global KeepRunning;
+global IS_IMU_PAUSED;
+global IS_GPS_PUASED;
+% global KeepRunning;
 global IMU_SAMPLE_RATE;
 
-GUI_COUNT_VALUE=0;
-KeepRunning=1;
+IS_IMU_PAUSED = 0;
+IS_GPS_PUASED = 0;
+IMU_SAMPLE_RATE = 50;
+% KeepRunning=1;
+
 set(handles.pushbutton_start_imu,'Enable','on');
 set(handles.pushbutton_pause_imu,'Enable','off');
 set(handles.pushbutton_stop_imu,'Enable','off');
@@ -74,7 +78,6 @@ guidata(hObject, handles);
 
 % *** load all libraries
 load_folder_subfolder_libraries;
-IMU_SAMPLE_RATE = 50;
 % UIWAIT makes SpSpj wait for user response (see UIRESUME)
 % uiwait(handles.figure1);
 
@@ -99,17 +102,17 @@ function pushbutton_start_imu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 %start
 
-global GUI_COUNT_VALUE;
-global IS_IMU_Running;
+global IS_IMU_PAUSED;
+global IS_IMU_RUNNING;
 global IMU_SERIAL_PORT;
 global IMU_SAMPLE_RATE;
 global IMU_OPEN_PORT;
 
-IS_IMU_Running=true;
+IS_IMU_RUNNING = true;
 
 
 % Start recieving data if stopeed before (not paused)
-if GUI_COUNT_VALUE == 0
+if ~IS_IMU_PAUSED
     [IMU_SERIAL_PORT, IMU_SAMPLE_RATE, IMU_OPEN_PORT] =...
         setup_IMU(IMU_SAMPLE_RATE);
 end
@@ -120,15 +123,15 @@ if (IMU_OPEN_PORT)
     set(handles.pushbutton_stop_imu,'Enable','on');
 end
 
-while (IS_IMU_Running && IMU_OPEN_PORT)
-    GUI_COUNT_VALUE = GUI_COUNT_VALUE+1;
-    set(handles.text1,'String',num2str(GUI_COUNT_VALUE));
+while (IS_IMU_RUNNING && IMU_OPEN_PORT)
+%     IS_IMU_PUASED = IS_IMU_PUASED+1;
+%     set(handles.text1,'String',num2str(IS_IMU_PUASED));
     pause(0.0001);
     Read_Acceleration_And_Angular_Rate(IMU_SERIAL_PORT, IMU_SAMPLE_RATE, IMU_OPEN_PORT);
 end
 
 % Close and delete the serial port, only if stopeed (not paused)
-if (IMU_OPEN_PORT && GUI_COUNT_VALUE==0)
+if (IMU_OPEN_PORT && ~IS_IMU_PAUSED)
     fclose(IMU_SERIAL_PORT);                                  % Close the serial port
     delete(IMU_SERIAL_PORT);                                  % Delete the serial object
 end
@@ -144,17 +147,19 @@ function pushbutton_start_gps_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-global IS_GPS_Running;
-global GUI_COUNT_VALUE;
+global IS_GPS_RUNNING;
+global IS_GPS_PAUSED;
 global GPS_SERIAL_PORT;
 global GPS_Error;
 global GPS_first_result;
 
-IS_GPS_Running=1;
+IS_GPS_RUNNING = true;
 
 % Start setting up the data recieving, if stopeed before (not paused)
-if GUI_COUNT_VALUE==0
+if ~IS_GPS_PAUSED
     [GPS_SERIAL_PORT, GPS_Error] = setup_gps;
+    % This is the first result for GPS
+    [result_data_ENU, GPS_first_result, result_error] = GPS_new(GPS_SERIAL_PORT, true);
 end
 
 if (GPS_Error ~= 0)
@@ -163,21 +168,17 @@ if (GPS_Error ~= 0)
     set(handles.pushbutton_stop_gps,'Enable','on');
 end
 
-while (GPS_Error ~= 0 && IS_GPS_Running)
-    % if this is the first result
-    if (GUI_COUNT_VALUE == 0)
-        [result_data_ENU, GPS_first_result, result_error] = GPS_new(GPS_SERIAL_PORT, true);
-    else
-        [result_data_ENU, ~, result_error] = GPS_new(GPS_SERIAL_PORT, false, GPS_first_result);
-    end
-    GUI_COUNT_VALUE=GUI_COUNT_VALUE+1;
-    set(handles.text1,'String',num2str(GUI_COUNT_VALUE));
+while (GPS_Error ~= 0 && IS_GPS_RUNNING)
+    [result_data_ENU, ~, result_error] = GPS_new(GPS_SERIAL_PORT, false, GPS_first_result);
+%     end
+%     GUI_COUNT_VALUE=GUI_COUNT_VALUE+1;
+%     set(handles.text1,'String',num2str(GUI_COUNT_VALUE));
     % The pause is nec to not block the GUI!
     pause(0.0001);
 end
 
 % Close and delete the serial port, only if stopeed (not paused)
-if (GPS_Error ~= 0 && GUI_COUNT_VALUE == 0)
+if (GPS_Error ~= 0 && ~IS_GPS_PAUSED)
     fclose(GPS_SERIAL_PORT);                                  % Close the serial port
     delete(GPS_SERIAL_PORT);                                  % Delete the serial object
 end
@@ -194,8 +195,11 @@ function pushbutton_pause_imu_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % global GUI_COUNT_VALUE;
-global IS_IMU_Running;
-IS_IMU_Running=0;
+global IS_IMU_RUNNING;
+global IS_IMU_PAUSED;
+IS_IMU_RUNNING = false;
+IS_IMU_PAUSED = true;
+
 
 set(handles.pushbutton_start_imu,'Enable','on');
 set(handles.pushbutton_pause_imu,'Enable','off');
@@ -210,8 +214,10 @@ function pushbutton_pause_gps_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % global GUI_COUNT_VALUE;
-global IS_GPS_Running;
-IS_GPS_Running=0;
+global IS_GPS_RUNNING;
+global IS_GPS_PAUSED;
+IS_GPS_RUNNING = false;
+IS_GPS_PAUSED = true;
 
 set(handles.pushbutton_start_gps,'Enable','on');
 set(handles.pushbutton_pause_gps,'Enable','off');
@@ -225,10 +231,11 @@ function pushbutton_stop_imu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-global GUI_COUNT_VALUE;
-global IS_IMU_Running;
-GUI_COUNT_VALUE=0;
-IS_IMU_Running=0;
+global IS_IMU_PAUSED;
+global IS_IMU_RUNNING;
+
+IS_IMU_PAUSED = false;
+IS_IMU_RUNNING = false;
 
 set(handles.pushbutton_start_imu,'Enable','on');
 set(handles.pushbutton_pause_imu,'Enable','off');
@@ -244,10 +251,10 @@ function pushbutton_stop_gps_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDqATA)
 
-global GUI_COUNT_VALUE;
-global IS_GPS_Running;
-GUI_COUNT_VALUE=0;
-IS_GPS_Running=0;
+global IS_GPS_PAUSED;
+global IS_GPS_RUNNING;
+IS_GPS_PAUSED = false;
+IS_GPS_RUNNING = false;
 
 set(handles.pushbutton_start_gps,'Enable','on');
 set(handles.pushbutton_pause_gps,'Enable','off');
@@ -263,10 +270,10 @@ function figure1_CloseRequestFcn(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-global IS_IMU_Running;
-global IS_GPS_Running;
-IS_IMU_Running=0;
-IS_GPS_Running=0;
+global IS_IMU_RUNNING;
+global IS_GPS_RUNNING;
+IS_IMU_RUNNING = false;
+IS_GPS_RUNNING = false;
 pause(1);
 
 % Hint: delete(hObject) closes the figure
