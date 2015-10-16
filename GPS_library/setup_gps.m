@@ -3,7 +3,7 @@ function [gps_serial_port, Error] = setup_gps
 PROMPT01 = 'Please enter COM port # (1 for COM1, etc.): ';
 % PROMPT02 = 'D - Get data for acceleration and angular rate\nQ - Quit';
 TITLE01 = 'COM port';
-Error = 1;
+Error = false;
 
 gps_serial_port = '';
 ComNum = char(inputdlg(PROMPT01, TITLE01, 1, {'2'}));
@@ -41,7 +41,7 @@ if isstrprop(ComNum,'digit')
 else
     fprintf('\nInvalid COM selected\n');
     h = msgbox('Invalid COM selected.');
-    Error = 0;
+    Error = true;
 end
 
 

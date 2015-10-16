@@ -56,12 +56,12 @@ function SpSpj_OpeningFcn(hObject, eventdata, handles, varargin)
 % Choose default command line output for SpSpj
 handles.output = hObject;
 global IS_IMU_PAUSED;
-global IS_GPS_PUASED;
+global IS_GPS_PAUSED;
 % global KeepRunning;
 global IMU_SAMPLE_RATE;
 
-IS_IMU_PAUSED = 0;
-IS_GPS_PUASED = 0;
+IS_IMU_PAUSED = false;
+IS_GPS_PAUSED = false;
 IMU_SAMPLE_RATE = 50;
 % KeepRunning=1;
 
@@ -151,25 +151,26 @@ global IS_GPS_RUNNING;
 global IS_GPS_PAUSED;
 global GPS_SERIAL_PORT;
 global GPS_Error;
-global GPS_first_result;
+global GPS_FIRST_RESULT;
 
 IS_GPS_RUNNING = true;
 
 % Start setting up the data recieving, if stopeed before (not paused)
 if ~IS_GPS_PAUSED
     [GPS_SERIAL_PORT, GPS_Error] = setup_gps;
-    % This is the first result for GPS
-    [result_data_ENU, GPS_first_result, result_error] = GPS_new(GPS_SERIAL_PORT, true);
 end
 
-if (GPS_Error ~= 0)
+if (~GPS_Error)
+    % This is the first result for GPS
+    [result_data_ENU, result_error, GPS_FIRST_RESULT] = GPS_new(GPS_SERIAL_PORT, true);
+    % Set up GUI
     set(handles.pushbutton_start_gps,'Enable','off');
     set(handles.pushbutton_pause_gps,'Enable','on');
     set(handles.pushbutton_stop_gps,'Enable','on');
 end
 
-while (GPS_Error ~= 0 && IS_GPS_RUNNING)
-    [result_data_ENU, ~, result_error] = GPS_new(GPS_SERIAL_PORT, false, GPS_first_result);
+while (~GPS_Error && IS_GPS_RUNNING)
+    [result_data_ENU, result_error] = GPS_new(GPS_SERIAL_PORT, false, GPS_FIRST_RESULT);
 %     end
 %     GUI_COUNT_VALUE=GUI_COUNT_VALUE+1;
 %     set(handles.text1,'String',num2str(GUI_COUNT_VALUE));
@@ -178,7 +179,7 @@ while (GPS_Error ~= 0 && IS_GPS_RUNNING)
 end
 
 % Close and delete the serial port, only if stopeed (not paused)
-if (GPS_Error ~= 0 && ~IS_GPS_PAUSED)
+if (~GPS_Error && ~IS_GPS_PAUSED)
     fclose(GPS_SERIAL_PORT);                                  % Close the serial port
     delete(GPS_SERIAL_PORT);                                  % Delete the serial object
 end

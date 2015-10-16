@@ -52,11 +52,11 @@ Mode = 1;
 %         if length(Input) == 1
 %             if Input == 'D' || Input == 'd'
                 %Get acceleration and angular rate, print in command window
-                if Mode == 1
+%                 if Mode == 1
                     [Packet,Error] = i3dmgx3_AccelAndAngRate(SerialLink);
-                elseif Mode == 2
-                    [Packet,Error] = i3dmgx3_AccelAndAngRateCM(SerialLink,SampleRate);
-                end
+%                 elseif Mode == 2
+%                     [Packet,Error] = i3dmgx3_AccelAndAngRateCM(SerialLink,SampleRate);
+%                 end
                 if Error == 0
                     i3dmgx3_PrintAccelAndAngRate(Packet);
                 end
@@ -78,23 +78,23 @@ Mode = 1;
     if Error ~= 0
         %Report error, ask user what to do next
         i3dmgx3_ExplainError(Error)
-        AskRestart = 1;
-        while AskRestart == 1
-            Input = input('\nP - Restart program\nQ - Quit\n\n','s');
-            if length(Input) == 1
-                if Input == 'P' || Input == 'p'
-                    AskRestart = 0;
-                    is_running = true;
-                elseif Input == 'Q' || Input == 'q'
-                    AskRestart = 0;
-                    is_running = false;
-                else
-                    fprintf('\nInvalid response\n');
-                end
-            else
-                fprintf('\nInvalid response\n');
-            end
-        end
+%         AskRestart = 1;
+%         while AskRestart == 1
+%             Input = input('\nP - Restart program\nQ - Quit\n\n','s');
+%             if length(Input) == 1
+%                 if Input == 'P' || Input == 'p'
+%                     AskRestart = 0;
+%                     is_running = true;
+%                 elseif Input == 'Q' || Input == 'q'
+%                     AskRestart = 0;
+%                     is_running = false;
+%                 else
+%                     fprintf('\nInvalid response\n');
+%                 end
+%             else
+%                 fprintf('\nInvalid response\n');
+%             end
+%         end
     end
 % end
 warning on MATLAB:serial:fread:unsuccessfulRead

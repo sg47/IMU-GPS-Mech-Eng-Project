@@ -3,8 +3,7 @@
 %  
 %  The main loop of this program waits for a character input from the user,
 %  upon which it transmits the ascii value and waits for data to be written.
-function [result_data_ENU, result_data, result_error] = GPS_new(gps_serial_port, is_first, result_data_first)
-
+function [result_data_ENU, result_error, result_data] = GPS_new(gps_serial_port, is_first, result_data_first)
 
 
 
@@ -16,7 +15,10 @@ result_data='';
 
 % We only want the strings with $GPGLL…
 if isempty(strmatch('$GPGLL',data))
-    data = fscanf(gps_serial_port);
+    try
+        data = fscanf(gps_serial_port);
+    catch
+        
     % TODO: add a timer for timeout?
     fprintf(data);                            % Read Data back from PIC
     [result_data, result_error] = nmealineread(data);
