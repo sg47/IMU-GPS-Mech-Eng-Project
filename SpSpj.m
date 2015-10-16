@@ -124,13 +124,12 @@ if (IMU_OPEN_PORT)
 end
 
 while (IS_IMU_RUNNING && IMU_OPEN_PORT)
-%     IS_IMU_PUASED = IS_IMU_PUASED+1;
-%     set(handles.text1,'String',num2str(IS_IMU_PUASED));
-    pause(0.0001);
+    % Set(handles.text1,'String',num2str(IS_IMU_PUASED));
     Read_Acceleration_And_Angular_Rate(IMU_SERIAL_PORT, IMU_SAMPLE_RATE, IMU_OPEN_PORT);
+    pause(0.0001);
 end
 
-% Close and delete the serial port, only if stopeed (not paused)
+% Closes and deletes the serial port, only if stopeed (not paused)
 if (IMU_OPEN_PORT && ~IS_IMU_PAUSED)
     fclose(IMU_SERIAL_PORT);                                  % Close the serial port
     delete(IMU_SERIAL_PORT);                                  % Delete the serial object
@@ -156,13 +155,18 @@ global GPS_FIRST_RESULT;
 IS_GPS_RUNNING = true;
 
 % Start setting up the data recieving, if stopeed before (not paused)
+% Also the GPS should not have been paused before.
 if ~IS_GPS_PAUSED
     [GPS_SERIAL_PORT, GPS_Error] = setup_gps;
 end
 
 if (~GPS_Error)
+    result_error = false;
     % This is the first result for GPS, the local ENU is based on this.
-    [result_data_ENU, result_error, GPS_FIRST_RESULT] = gps_read(GPS_SERIAL_PORT, true);
+    if ~IS_GPS_PAUSED
+        [result_data_ENU, result_error, GPS_FIRST_RESULT] = ...
+                gps_read(GPS_SERIAL_PORT, true);
+    end
     % Set up GUI
     if ~result_error
         set(handles.pushbutton_start_gps,'Enable','off');

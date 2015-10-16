@@ -4,6 +4,7 @@
 %  The main loop of this program waits for a character input from the user,
 %  upon which it transmits the ascii value and waits for data to be written.
 function [result_data_ENU, result_error, result_data] = gps_read(gps_serial_port, is_first, result_data_first)
+PROMPT01 = 'A timeout occurred. Are you sure the GPS device is connected or the correct port was selected?';
 
 
 
@@ -28,7 +29,7 @@ if isempty(strmatch('$GPGLL',data))
             end
         end
     catch
-        h = msgbox('A timeout occurred. Are you sure the GPS device is connected?');
+        h = msgbox(PROMPT01);
         result_error = true;
     end
 end

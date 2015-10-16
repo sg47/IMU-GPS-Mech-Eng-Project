@@ -11,7 +11,7 @@ if Error == 0
     Error = i3dmgx3_SendBuffData(SerialLink,'CMD_ACCELERATION_ANGU'); %Write command to device
     if Error == 0
         [Packet,Error] = i3dmgx3_ReceiveData(SerialLink,'CMD_ACCELERATION_ANGU'); %Read data from device
-        [Packet2, Error2] = i3dmgx3_ReceiveData(SerialLink,'CMD_ORRIENTATION_MAT');
+%         [Packet2, Error2] = i3dmgx3_ReceiveData(SerialLink,'CMD_ORRIENTATION_MAT');
         if Error ~= 0
             Packet = [];
         end
