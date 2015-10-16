@@ -161,16 +161,20 @@ if ~IS_GPS_PAUSED
 end
 
 if (~GPS_Error)
-    % This is the first result for GPS
-    [result_data_ENU, result_error, GPS_FIRST_RESULT] = GPS_new(GPS_SERIAL_PORT, true);
+    % This is the first result for GPS, the local ENU is based on this.
+    [result_data_ENU, result_error, GPS_FIRST_RESULT] = gps_read(GPS_SERIAL_PORT, true);
     % Set up GUI
-    set(handles.pushbutton_start_gps,'Enable','off');
-    set(handles.pushbutton_pause_gps,'Enable','on');
-    set(handles.pushbutton_stop_gps,'Enable','on');
+    if ~result_error
+        set(handles.pushbutton_start_gps,'Enable','off');
+        set(handles.pushbutton_pause_gps,'Enable','on');
+        set(handles.pushbutton_stop_gps,'Enable','on');
+    else
+        GPS_Error = true;
+    end
 end
 
 while (~GPS_Error && IS_GPS_RUNNING)
-    [result_data_ENU, result_error] = GPS_new(GPS_SERIAL_PORT, false, GPS_FIRST_RESULT);
+    [result_data_ENU, result_error] = gps_read(GPS_SERIAL_PORT, false, GPS_FIRST_RESULT);
 %     end
 %     GUI_COUNT_VALUE=GUI_COUNT_VALUE+1;
 %     set(handles.text1,'String',num2str(GUI_COUNT_VALUE));
