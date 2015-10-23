@@ -47,7 +47,7 @@ PortOpen = false;
 SerialLink = '';
 
 % Get COM port # and create serial link
-ComNum = char(inputdlg(PROMPT01, TITLE01, 1, {'3'}));
+ComNum = char(inputdlg(PROMPT01, TITLE01, 1, {'4'}));
 if isstrprop(ComNum,'digit')
     ComNum = str2double(ComNum);
     % if a port is open from previous runs, delete the port
