@@ -23,7 +23,7 @@ function varargout = SpSpj(varargin)
 
 % Edit the above text to modify the response to help SpSpj
 
-% Last Modified by GUIDE v2.5 13-Oct-2015 14:41:14
+% Last Modified by GUIDE v2.5 23-Oct-2015 16:26:06
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -107,7 +107,6 @@ global IS_IMU_RUNNING;
 global IMU_SERIAL_PORT;
 global IMU_SAMPLE_RATE;
 global IMU_OPEN_PORT;
-
 IS_IMU_RUNNING = true;
 
 
@@ -116,7 +115,6 @@ global IS_GPS_PAUSED;
 global GPS_SERIAL_PORT;
 global GPS_Error;
 global GPS_FIRST_RESULT;
-
 IS_GPS_RUNNING = true;
 
 
@@ -133,7 +131,6 @@ end
 if ~IS_GPS_PAUSED
     [GPS_SERIAL_PORT, GPS_Error] = setup_gps;
 end
-
 
 
 
@@ -162,8 +159,9 @@ if (~GPS_Error)
 end
 
 
+
 while (~GPS_Error && IS_GPS_RUNNING && IS_IMU_RUNNING && IMU_OPEN_PORT)
-    [result_data_ENU, result_error] = gps_read(GPS_SERIAL_PORT, false, GPS_FIRST_RESULT);
+    [result_data_ENU, result_error] = read_gps_and_display(GPS_SERIAL_PORT, false, GPS_FIRST_RESULT);
 %     end
 %     GUI_COUNT_VALUE=GUI_COUNT_VALUE+1;
 %     set(handles.text1,'String',num2str(GUI_COUNT_VALUE));
@@ -171,7 +169,7 @@ while (~GPS_Error && IS_GPS_RUNNING && IS_IMU_RUNNING && IMU_OPEN_PORT)
     pause(0.0001);
     
     % Set(handles.text1,'String',num2str(IS_IMU_PUASED));
-    Read_Acceleration_And_Angular_Rate(IMU_SERIAL_PORT, IMU_SAMPLE_RATE, IMU_OPEN_PORT);
+    read_imu_packet_and_display(IMU_SERIAL_PORT, IMU_SAMPLE_RATE, IMU_OPEN_PORT);
     pause(0.0001);
 end
 
@@ -181,7 +179,7 @@ end
 
 % while (IS_IMU_RUNNING && IMU_OPEN_PORT)
 %     % Set(handles.text1,'String',num2str(IS_IMU_PUASED));
-%     Read_Acceleration_And_Angular_Rate(IMU_SERIAL_PORT, IMU_SAMPLE_RATE, IMU_OPEN_PORT);
+%     read_imu_packet_and_display(IMU_SERIAL_PORT, IMU_SAMPLE_RATE, IMU_OPEN_PORT);
 %     pause(0.0001);
 % end
 
@@ -227,7 +225,7 @@ if (~GPS_Error)
     % This is the first result for GPS, the local ENU is based on this.
     if ~IS_GPS_PAUSED
         [result_data_ENU, result_error, GPS_FIRST_RESULT] = ...
-                gps_read(GPS_SERIAL_PORT, true);
+                read_gps_and_display(GPS_SERIAL_PORT, true);
     end
     % Set up GUI
     if ~result_error
@@ -240,7 +238,7 @@ if (~GPS_Error)
 end
 
 while (~GPS_Error && IS_GPS_RUNNING)
-    [result_data_ENU, result_error] = gps_read(GPS_SERIAL_PORT, false, GPS_FIRST_RESULT);
+    [result_data_ENU, result_error] = read_gps_and_display(GPS_SERIAL_PORT, false, GPS_FIRST_RESULT);
 %     end
 %     GUI_COUNT_VALUE=GUI_COUNT_VALUE+1;
 %     set(handles.text1,'String',num2str(GUI_COUNT_VALUE));
@@ -265,12 +263,18 @@ function pushbutton_pause_imu_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% global GUI_COUNT_VALUE;
+% IMU
 global IS_IMU_RUNNING;
 global IS_IMU_PAUSED;
 IS_IMU_RUNNING = false;
 IS_IMU_PAUSED = true;
 
+
+% GPS
+global IS_GPS_RUNNING;
+global IS_GPS_PAUSED;
+IS_GPS_RUNNING = false;
+IS_GPS_PAUSED = true;
 
 set(handles.pushbutton_start_imu,'Enable','on');
 set(handles.pushbutton_pause_imu,'Enable','off');
@@ -304,9 +308,14 @@ function pushbutton_stop_imu_Callback(hObject, eventdata, handles)
 
 global IS_IMU_PAUSED;
 global IS_IMU_RUNNING;
-
 IS_IMU_PAUSED = false;
 IS_IMU_RUNNING = false;
+
+
+global IS_GPS_PAUSED;
+global IS_GPS_RUNNING;
+IS_GPS_PAUSED = false;
+IS_GPS_RUNNING = false;
 
 set(handles.pushbutton_start_imu,'Enable','on');
 set(handles.pushbutton_pause_imu,'Enable','off');

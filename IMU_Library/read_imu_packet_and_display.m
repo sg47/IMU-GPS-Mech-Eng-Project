@@ -25,7 +25,7 @@
 %* (9.80665 m/s^2), and Angular Rate is measured in rad/s.
 %*-------------------------------------------------------------------------
 
-function [Error] = Read_Acceleration_And_Angular_Rate(SerialLink, Error, SampleRate, PortOpen)
+function [Error] = read_imu_packet_and_display(SerialLink, Error, SampleRate, PortOpen)
 
 % PROMPT02 = 'D - Get data for acceleration and angular rate\nQ - Quit';
 % TITLE02 = 'Menu';
@@ -51,14 +51,21 @@ Mode = 1;
 %         %Execute command
 %         if length(Input) == 1
 %             if Input == 'D' || Input == 'd'
-                %Get acceleration and angular rate, print in command window
+
+
+                % Get acceleration, angular rate and orientation, print in command window
+                % You can decide what data to get in here; check command
+                % set summary in page 8 of Single Byte Data Communication
+                % Protocol.
 %                 if Mode == 1
-                    [Packet,Error] = i3dmgx3_AccelAndAngRate(SerialLink);
+%                     [Packet,Error] = i3dmgx3_AccelAndAngRate(SerialLink);
+                    [Packet,Error] = i3dmgx3_AccelAngOreint(SerialLink);
 %                 elseif Mode == 2
 %                     [Packet,Error] = i3dmgx3_AccelAndAngRateCM(SerialLink,SampleRate);
 %                 end
                 if Error == 0
-                    i3dmgx3_PrintAccelAndAngRate(Packet);
+%                     i3dmgx3_PrintAccelAndAngRate(Packet);
+                    i3dmgx3_PrintAccAngMagOriRate(Packet);
                 end
 %             elseif Input == 'Q' || Input == 'q'
 %                 %Terminate the function
