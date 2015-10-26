@@ -19,6 +19,14 @@ Data = [convert2float32bin(Packet(2:5));        % accel
           convert2float32bin(Packet(54:57));
           convert2float32bin(Packet(58:61));
           convert2ulong(Packet(62:65))/62500]; %Convert data to decimals
+
+% Pitch = theta = arcsin(-M13)
+% Roll = phi = arcsin(-M13)
+% Pitch = psi = arcsin(-M13)
+pitch = rad2deg(asin(Data(9)));
+roll = rad2deg(atan2(Data(12),Data(12)));
+yaw = rad2deg(atan2(Data(8), Data(7)));
+
       
 Data = [Data(1);    % accel
         Data(2);
@@ -37,7 +45,10 @@ Data = [Data(1);    % accel
         Data(13);    % orientation M31
         Data(14);
         Data(15);
-        Data(16)];  % Date and time
+        Data(16);
+        pitch;
+        roll;
+        yaw];  % Date and time
     
 PositivePrint = {sprintf('\nAcceleration:\nX:     %f g',Data(1));
                  sprintf('Y:     %f g',Data(2));
@@ -56,7 +67,11 @@ PositivePrint = {sprintf('\nAcceleration:\nX:     %f g',Data(1));
                  sprintf('M31     %f',Data(15));
                  sprintf('M32     %f',Data(16));
                  sprintf('M33     %f',Data(17));
-                 sprintf('Time: %f seconds from powerup',Data(18))}; %Define format to print data in
+                 sprintf('Pitch: %f in degrees',Data(19));
+                 sprintf('Roll:  %f in degrees',Data(20));
+                 sprintf('Yaw:   %f in degrees',Data(21));
+                 % Define format to print data in
+                 sprintf('Time: %f seconds from powerup',Data(18));}; 
              
 NegativePrint = {sprintf('\nAcceleration:\nX:    %f g',Data(1));
                  sprintf('Y:    %f g',Data(2));
@@ -75,7 +90,11 @@ NegativePrint = {sprintf('\nAcceleration:\nX:    %f g',Data(1));
                  sprintf('M31    %f',Data(15));
                  sprintf('M32    %f',Data(16));
                  sprintf('M33    %f',Data(17));
-                 sprintf('Time:%f seconds from powerup',Data(18))}; %Remove a space for negative values to make decimal points align
+                 sprintf('Pitch:  %f in degrees',Data(19));
+                 sprintf('Roll:   %f in degrees',Data(20));
+                 sprintf('Yaw:    %f in degrees',Data(21));
+                 %Remove a space for negative values to make decimal points align
+                 sprintf('Time: %f seconds from powerup',Data(18))};
              
 for DataNum = 1:numel(Data)
     if Data(DataNum) < 0
